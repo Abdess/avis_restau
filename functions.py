@@ -18,6 +18,13 @@ def appendDFToCSV_void(df, csvFilePath, sep=","):
     else:
         df.to_csv(csvFilePath, mode='a', index=False, sep=sep, header=False)
 
+def selected_topics(model, vectorizer, top_n=10):
+    '''Fonctions permettant d'afficher des mots-clés pour chaque topic'''
+    for idx, topic in enumerate(model.components_):
+        print("Topic %d:" % (idx))
+        print([(vectorizer.get_feature_names_out()[i], topic[i])
+                        for i in topic.argsort()[:-top_n - 1:-1]]) 
+
 
 # def chunker(iterable, total_length, chunksize):
 #     return (iterable[pos: pos + chunksize] for pos in range(0, total_length, chunksize))
