@@ -1,10 +1,13 @@
 import os
 import pandas as pd
+import re
+import requests
 # import spacy
 # from joblib import Parallel, delayed
 
 # nlp = spacy.load('fr_core_news_lg')
 # nlp.add_pipe('sentencizer')
+
 
 def appendDFToCSV_void(df, csvFilePath, sep=","):
     if not os.path.isfile(csvFilePath):
@@ -18,13 +21,34 @@ def appendDFToCSV_void(df, csvFilePath, sep=","):
     else:
         df.to_csv(csvFilePath, mode='a', index=False, sep=sep, header=False)
 
+
 def selected_topics(model, vectorizer, top_n=10):
     '''Fonctions permettant d'afficher des mots-clés pour chaque topic'''
     for idx, topic in enumerate(model.components_):
         print("Topic %d:" % (idx))
         print([(vectorizer.get_feature_names_out()[i], topic[i])
-                        for i in topic.argsort()[:-top_n - 1:-1]]) 
+               for i in topic.argsort()[:-top_n - 1:-1]])
 
+
+def download(row):
+
+    root_folder = 'data/raw/photos/'
+
+    rm_base_url = re.sub('http.*o/', '', str(row.photos))
+
+    name_cleaned = rm_base_url.replace("/", "_")
+
+    filename = os.path.join(root_folder,
+                            name_cleaned)
+
+    # créer un dossier s'il n'existe pas
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+    url = row.photos
+    print(f"Téléchargement de {url} vers {filename}")
+    r = requests.get(url, allow_redirects=True)
+    with open(filename, 'wb') as f:
+        f.write(r.content)
 
 # def chunker(iterable, total_length, chunksize):
 #     return (iterable[pos: pos + chunksize] for pos in range(0, total_length, chunksize))
@@ -35,7 +59,7 @@ def selected_topics(model, vectorizer, top_n=10):
 
 # def lemmatize_pipe(doc):
 #     lemma_list = [str(tok.lemma_).lower() for tok in doc
-#                   if tok.is_alpha and tok.text.lower() not in stopwords] 
+#                   if tok.is_alpha and tok.text.lower() not in stopwords]
 #     return lemma_list
 
 # def process_chunk(texts):
